@@ -14,11 +14,36 @@ import { Button } from '../components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '../components/ui/alert';
 import { Skeleton } from '../components/ui/skeleton';
 
+const countryCodes = [
+  { code: '+91', label: 'IN +91' },
+  { code: '+1', label: 'US +1' },
+  { code: '+44', label: 'UK +44' },
+  { code: '+1', label: 'CA +1' },
+  { code: '+61', label: 'AU +61' },
+  { code: '+49', label: 'DE +49' },
+  { code: '+33', label: 'FR +33' },
+  { code: '+971', label: 'AE +971' },
+  { code: '+966', label: 'SA +966' },
+  { code: '+65', label: 'SG +65' },
+  { code: '+81', label: 'JP +81' },
+  { code: '+82', label: 'KR +82' },
+  { code: '+55', label: 'BR +55' },
+  { code: '+52', label: 'MX +52' },
+  { code: '+27', label: 'ZA +27' },
+  { code: '+234', label: 'NG +234' },
+  { code: '+254', label: 'KE +254' },
+  { code: '+60', label: 'MY +60' },
+  { code: '+62', label: 'ID +62' },
+  { code: '+63', label: 'PH +63' },
+];
+
 const leadSchema = z.object({
   leadType: z.enum(['NEW', 'YELLOW']),
   leadName: z.string().optional(),
   leadEmail: z.string().email('Invalid email').optional().or(z.literal('')),
-  leadContact: z.string().optional(),
+  countryCode: z.string().optional(),
+  phoneNumber: z.string().optional(),
+  socialLink: z.string().url('Invalid URL').optional().or(z.literal('')),
   signupDate: z.string().optional(),
   sourceChannel: z.enum(['LinkedIn', 'Website', 'Referral', 'Cold Call', 'Event', 'Other', '']).optional(),
   sourceBdaId: z.string().optional(),
@@ -47,11 +72,18 @@ export function AddLead() {
   const members = membersResponse?.data || [];
 
   const createMutation = useMutation({
-    mutationFn: (data: LeadForm) => leadApi.create(id!, {
-      ...data,
-      sourceChannel: data.sourceChannel || undefined,
-      sourceBdaId: data.sourceBdaId || undefined,
-    } as any),
+    mutationFn: (data: LeadForm) => {
+      const leadContact = data.phoneNumber
+        ? `${data.countryCode || '+91'} ${data.phoneNumber}`
+        : undefined;
+      const { countryCode, phoneNumber, ...rest } = data;
+      return leadApi.create(id!, {
+        ...rest,
+        leadContact,
+        sourceChannel: data.sourceChannel || undefined,
+        sourceBdaId: data.sourceBdaId || undefined,
+      } as any);
+    },
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['leads', id] });
       if (res.data && (res.data as any).isDuplicate) {
@@ -73,6 +105,7 @@ export function AddLead() {
     resolver: zodResolver(leadSchema),
     defaultValues: {
       leadType: 'NEW',
+      countryCode: '+91',
     },
   });
 
@@ -200,11 +233,29 @@ export function AddLead() {
                   )}
                 </div>
                 <div>
-                  <Label className="mb-1">Lead Contact</Label>
+                  <Label className="mb-1">Phone Number</Label>
+                  <div className="flex gap-2">
+                    <select {...register('countryCode')} className={`${selectClassName} w-28 shrink-0`}>
+                      {countryCodes.map((cc, i) => (
+                        <option key={`${cc.code}-${i}`} value={cc.code}>{cc.label}</option>
+                      ))}
+                    </select>
+                    <Input
+                      {...register('phoneNumber')}
+                      placeholder="234 567 8900"
+                      className="flex-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <Label className="mb-1">Social Link</Label>
                   <Input
-                    {...register('leadContact')}
-                    placeholder="+1 234 567 8900"
+                    {...register('socialLink')}
+                    placeholder="https://linkedin.com/in/johndoe"
                   />
+                  {errors.socialLink && (
+                    <p className="text-destructive text-sm mt-1">{errors.socialLink.message}</p>
+                  )}
                 </div>
                 <div>
                   <Label className="mb-1">Signup Date</Label>
