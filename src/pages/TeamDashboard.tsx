@@ -1,8 +1,9 @@
+import { useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { ChevronLeft, Users, TrendingUp, BarChart3, Target } from 'lucide-react';
-import { teamApi, trackerApi } from '../api';
-import { displayRole, statusColor } from '../lib/utils';
+import { teamApi, trackerApi, customStatusApi } from '../api';
+import { displayRole, colorToBadge } from '../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Skeleton } from '../components/ui/skeleton';
 import { Badge } from '../components/ui/badge';
@@ -22,8 +23,23 @@ export function TeamDashboard() {
     enabled: !!id,
   });
 
+  const { data: leadStatusesResponse } = useQuery({
+    queryKey: ['custom-statuses', id, 'LEAD'],
+    queryFn: () => customStatusApi.list(id!, 'LEAD'),
+    enabled: !!id,
+  });
+
   const tracker = trackerResponse?.data;
   const dashboard = dashboardResponse?.data;
+  const customLeadStatuses = leadStatusesResponse?.data || [];
+  const pipelineStatuses = useMemo(() => {
+    if (customLeadStatuses.length > 0) return customLeadStatuses.map(s => ({ name: s.statusName, color: s.statusColor }));
+    return [
+      { name: 'NEW', color: 'blue' }, { name: 'CONTACTED', color: 'yellow' },
+      { name: 'QUALIFIED', color: 'purple' }, { name: 'CONVERTED', color: 'green' },
+      { name: 'LOST', color: 'red' },
+    ];
+  }, [customLeadStatuses]);
 
   if (isLoading) {
     return (
@@ -44,8 +60,13 @@ export function TeamDashboard() {
     return <div className="text-center py-8 text-muted-foreground">No data available</div>;
   }
 
+  // Find "success" statuses for conversion rate calculation
+  const successStatusNames = customLeadStatuses.filter(s => s.statusType === 'SUCCESS').map(s => s.statusName);
+  const convertedCount = dashboard.statusBreakdown
+    .filter(s => successStatusNames.length > 0 ? successStatusNames.includes(s.status) : s.status === 'CONVERTED')
+    .reduce((sum: number, s: any) => sum + s.count, 0);
   const conversionRate = dashboard.totalLeads > 0
-    ? ((dashboard.statusBreakdown.find(s => s.status === 'CONVERTED')?.count || 0) / dashboard.totalLeads * 100).toFixed(1)
+    ? (convertedCount / dashboard.totalLeads * 100).toFixed(1)
     : '0';
 
   return (
@@ -94,9 +115,9 @@ export function TeamDashboard() {
               <Target className="h-5 w-5 text-orange-500" />
             </div>
             <div className="text-3xl font-bold text-orange-600">
-              {dashboard.statusBreakdown.find(s => s.status === 'QUALIFIED')?.count || 0}
+              {convertedCount}
             </div>
-            <div className="text-sm text-muted-foreground">Qualified Leads</div>
+            <div className="text-sm text-muted-foreground">Converted Leads</div>
           </CardContent>
         </Card>
       </div>
@@ -111,15 +132,15 @@ export function TeamDashboard() {
         </CardHeader>
         <CardContent>
           <div className="flex gap-2 flex-wrap">
-            {['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'].map((status) => {
-              const count = dashboard.statusBreakdown.find(s => s.status === status)?.count || 0;
+            {pipelineStatuses.map(({ name, color }) => {
+              const count = dashboard.statusBreakdown.find(s => s.status === name)?.count || 0;
               const pct = dashboard.totalLeads > 0 ? (count / dashboard.totalLeads * 100).toFixed(0) : 0;
               return (
-                <Card key={status} className="flex-1 min-w-[120px] border-0 shadow-none">
+                <Card key={name} className="flex-1 min-w-[100px] border-0 shadow-none">
                   <CardContent className="p-0">
-                    <div className={`rounded-lg p-3 text-center ${statusColor(status)}`}>
+                    <div className={`rounded-lg p-3 text-center ${colorToBadge(color)}`}>
                       <div className="text-2xl font-bold">{count}</div>
-                      <div className="text-xs font-medium">{status}</div>
+                      <div className="text-xs font-medium">{name}</div>
                       <div className="text-xs opacity-70">{pct}%</div>
                     </div>
                   </CardContent>
@@ -146,17 +167,17 @@ export function TeamDashboard() {
                   <th className="py-2 px-3">Member</th>
                   <th className="py-2 px-3">Role</th>
                   <th className="py-2 px-3 text-center">Total</th>
-                  <th className="py-2 px-3 text-center">New</th>
-                  <th className="py-2 px-3 text-center">Contacted</th>
-                  <th className="py-2 px-3 text-center">Qualified</th>
-                  <th className="py-2 px-3 text-center">Converted</th>
-                  <th className="py-2 px-3 text-center">Lost</th>
+                  {pipelineStatuses.map(s => (
+                    <th key={s.name} className="py-2 px-3 text-center">{s.name}</th>
+                  ))}
                   <th className="py-2 px-3 text-center">Conv. Rate</th>
                 </tr>
               </thead>
               <tbody>
-                {dashboard.memberStats.map((m) => {
-                  const rate = m.totalLeads > 0 ? (m.convertedLeads / m.totalLeads * 100).toFixed(0) : '0';
+                {dashboard.memberStats.map((m: any) => {
+                  const sc = m.statusCounts || {};
+                  const memberConverted = successStatusNames.reduce((sum: number, n: string) => sum + (sc[n] || 0), 0);
+                  const rate = m.totalLeads > 0 ? (memberConverted / m.totalLeads * 100).toFixed(0) : '0';
                   return (
                     <tr key={m.userId} className="border-b border-border hover:bg-muted/50">
                       <td className="py-2 px-3">
@@ -167,11 +188,9 @@ export function TeamDashboard() {
                         <Badge variant="secondary">{displayRole(m.role)}</Badge>
                       </td>
                       <td className="py-2 px-3 text-center font-bold">{m.totalLeads}</td>
-                      <td className="py-2 px-3 text-center">{m.newLeads}</td>
-                      <td className="py-2 px-3 text-center">{m.contactedLeads}</td>
-                      <td className="py-2 px-3 text-center">{m.qualifiedLeads}</td>
-                      <td className="py-2 px-3 text-center text-green-600 font-medium">{m.convertedLeads}</td>
-                      <td className="py-2 px-3 text-center text-red-600">{m.lostLeads}</td>
+                      {pipelineStatuses.map(s => (
+                        <td key={s.name} className="py-2 px-3 text-center">{sc[s.name] || 0}</td>
+                      ))}
                       <td className="py-2 px-3 text-center font-medium">{rate}%</td>
                     </tr>
                   );

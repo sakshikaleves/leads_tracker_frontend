@@ -52,10 +52,10 @@ export function Dashboard() {
             Here's an overview of your trackers and leads
           </p>
         </div>
-        <Button asChild>
+        <Button asChild size="sm">
           <Link to="/trackers/new">
-            <Plus className="w-4 h-4 mr-2" />
-            New Tracker
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline ml-1">New Tracker</span>
           </Link>
         </Button>
       </div>

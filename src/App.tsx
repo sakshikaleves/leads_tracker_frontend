@@ -13,6 +13,8 @@ import { EditLead } from './pages/EditLead';
 import { Analytics } from './pages/Analytics';
 import { TeamDashboard } from './pages/TeamDashboard';
 import { TrackerSettings } from './pages/TrackerSettings';
+import { AdminPanel } from './pages/AdminPanel';
+import { OrgMembers } from './pages/OrgMembers';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -84,6 +86,24 @@ function App() {
             <Route path="/trackers/:id/leads/:leadId/edit" element={<EditLead />} />
             <Route path="/analytics" element={<Analytics />} />
           </Route>
+
+          {/* Admin routes — standalone, outside main Layout */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute>
+                <AdminPanel />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/orgs/:orgId/members"
+            element={
+              <ProtectedRoute>
+                <OrgMembers />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Catch all */}
           <Route path="*" element={<Navigate to="/" replace />} />

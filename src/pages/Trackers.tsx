@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Copy, FolderKanban, Users, FileText, ArrowRight } from 'lucide-react';
+import { Plus, Search, Copy, FolderKanban, Users, FileText, ArrowRight, Lock } from 'lucide-react';
 import { trackerApi } from '../api';
 import { formatDate, displayRole } from '../lib/utils';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
@@ -124,65 +124,82 @@ export function Trackers() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredTrackers.map((tracker: any) => (
-            <Card key={tracker.trackerId} className="flex flex-col hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base truncate">
-                      <Link
-                        to={`/trackers/${tracker.trackerId}`}
-                        className="hover:text-primary transition-colors"
+          {filteredTrackers.map((tracker: any) => {
+            const isLocked = !tracker.hasAccess;
+            return (
+              <Card key={tracker.trackerId} className={`flex flex-col transition-shadow ${isLocked ? 'opacity-60' : 'hover:shadow-md'}`}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-base truncate">
+                        {isLocked ? (
+                          <span className="flex items-center gap-1.5 text-muted-foreground">
+                            <Lock className="w-3.5 h-3.5 shrink-0" />
+                            {tracker.trackerName}
+                          </span>
+                        ) : (
+                          <Link
+                            to={`/trackers/${tracker.trackerId}`}
+                            className="hover:text-primary transition-colors"
+                          >
+                            {tracker.trackerName}
+                          </Link>
+                        )}
+                      </CardTitle>
+                      <CardDescription className="truncate">{tracker.businessName}</CardDescription>
+                    </div>
+                    {!isLocked && (tracker.role === 'ADMIN' || tracker.role === 'OWNER') && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 h-8 w-8 text-muted-foreground"
+                        onClick={() => duplicateMutation.mutate(tracker.trackerId)}
+                        title="Duplicate tracker"
                       >
-                        {tracker.trackerName}
-                      </Link>
-                    </CardTitle>
-                    <CardDescription className="truncate">{tracker.businessName}</CardDescription>
+                        <Copy className="w-3.5 h-3.5" />
+                      </Button>
+                    )}
                   </div>
-                  {(tracker.role === 'ADMIN' || tracker.role === 'OWNER') && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="shrink-0 h-8 w-8 text-muted-foreground"
-                      onClick={() => duplicateMutation.mutate(tracker.trackerId)}
-                      title="Duplicate tracker"
-                    >
-                      <Copy className="w-3.5 h-3.5" />
+                </CardHeader>
+                <CardContent className="pb-3 flex-1">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant={tracker.trackerMode === 'SINGULAR' ? 'secondary' : 'default'}>
+                      {tracker.trackerMode === 'SINGULAR' ? 'Singular' : 'Team'}
+                    </Badge>
+                    {!isLocked && tracker.role && (
+                      <Badge variant="outline">{displayRole(tracker.role)}</Badge>
+                    )}
+                    {isLocked && (
+                      <Badge variant="outline" className="text-muted-foreground">No Access</Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1.5">
+                      <Users className="w-3.5 h-3.5" />
+                      {tracker.memberCount || 0} members
+                    </span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Created {formatDate(tracker.createdAt)}
+                  </p>
+                </CardContent>
+                <CardFooter className="pt-0">
+                  {isLocked ? (
+                    <p className="text-xs text-muted-foreground text-center w-full py-2">
+                      Ask the tracker owner to add you as a member
+                    </p>
+                  ) : (
+                    <Button variant="secondary" className="w-full" asChild>
+                      <Link to={`/trackers/${tracker.trackerId}`}>
+                        View Leads
+                        <ArrowRight className="w-4 h-4 ml-2" />
+                      </Link>
                     </Button>
                   )}
-                </div>
-              </CardHeader>
-              <CardContent className="pb-3 flex-1">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant={tracker.trackerMode === 'SINGULAR' ? 'secondary' : 'default'}>
-                    {tracker.trackerMode === 'SINGULAR' ? 'Singular' : 'Team'}
-                  </Badge>
-                  <Badge variant="outline">{displayRole(tracker.role || '')}</Badge>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1.5">
-                    <FileText className="w-3.5 h-3.5" />
-                    {tracker.leadCount || 0} leads
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5" />
-                    {tracker.memberCount || 0} members
-                  </span>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  Created {formatDate(tracker.createdAt)}
-                </p>
-              </CardContent>
-              <CardFooter className="pt-0">
-                <Button variant="secondary" className="w-full" asChild>
-                  <Link to={`/trackers/${tracker.trackerId}`}>
-                    View Leads
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
+                </CardFooter>
+              </Card>
+            );
+          })}
         </div>
       )}
 

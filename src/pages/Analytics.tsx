@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { BarChart3, TrendingUp, Globe, Target, Clock, AlertTriangle, Users, Phone, Calendar } from 'lucide-react';
-import { trackerApi, analyticsApi } from '../api';
-import { getMonthName } from '../lib/utils';
+import { trackerApi, analyticsApi, customStatusApi } from '../api';
+import { getMonthName, colorToDot } from '../lib/utils';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Label } from '../components/ui/label';
@@ -14,8 +14,7 @@ function formatDateStr(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
-const STATUS_ORDER = ['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'];
-const STATUS_COLORS: Record<string, string> = {
+const FALLBACK_STATUS_COLORS: Record<string, string> = {
   NEW: 'bg-blue-500',
   CONTACTED: 'bg-yellow-500',
   QUALIFIED: 'bg-purple-500',
@@ -55,8 +54,33 @@ export function Analytics() {
     enabled: selectedTrackers.length > 0,
   });
 
+  // Fetch custom lead statuses when a single tracker is selected
+  const { data: leadStatusesResponse } = useQuery({
+    queryKey: ['custom-statuses', selectedTrackers[0], 'LEAD'],
+    queryFn: () => customStatusApi.list(selectedTrackers[0], 'LEAD'),
+    enabled: selectedTrackers.length === 1,
+  });
+
   const trackers = trackersResponse?.data || [];
   const analytics = analyticsResponse?.data as any;
+
+  // Derive STATUS_ORDER and STATUS_COLORS dynamically
+  const customLeadStatuses = leadStatusesResponse?.data || [];
+  const STATUS_ORDER = useMemo(() => {
+    if (customLeadStatuses.length > 0) return customLeadStatuses.map(s => s.statusName);
+    // Fallback: use keys from byStatus response
+    if (analytics?.byStatus) return Object.keys(analytics.byStatus);
+    return ['NEW', 'CONTACTED', 'QUALIFIED', 'CONVERTED', 'LOST'];
+  }, [customLeadStatuses, analytics?.byStatus]);
+
+  const STATUS_COLORS = useMemo(() => {
+    if (customLeadStatuses.length > 0) {
+      const map: Record<string, string> = {};
+      for (const s of customLeadStatuses) map[s.statusName] = colorToDot(s.statusColor);
+      return map;
+    }
+    return FALLBACK_STATUS_COLORS;
+  }, [customLeadStatuses]);
 
   const toggleTracker = (trackerId: string) => {
     setSelectedTrackers((prev) =>
@@ -165,8 +189,8 @@ export function Analytics() {
         </div>
       ) : analytics ? (
         <div className="space-y-5">
-          {/* Summary Cards — compact, 6 columns */}
-          <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+          {/* Summary Cards — compact, responsive */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             {[
               { label: 'Total Leads', value: analytics.totalLeads, icon: TrendingUp, color: 'border-indigo-500', iconColor: 'text-indigo-600', bg: 'bg-indigo-50' },
               { label: 'New Leads', value: analytics.byType?.NEW || 0, icon: Target, color: 'border-emerald-500', iconColor: 'text-emerald-600', bg: 'bg-emerald-50' },

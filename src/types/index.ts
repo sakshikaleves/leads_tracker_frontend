@@ -5,6 +5,7 @@ export interface User {
   email: string;
   phoneNumber: string | null;
   createdAt: string;
+  isSuperAdmin?: boolean;
 }
 
 export interface AuthResponse {
@@ -15,8 +16,31 @@ export interface AuthResponse {
     name: string;
     email: string;
     phoneNumber: string | null;
+    isSuperAdmin?: boolean;
     token: string;
   };
+}
+
+// Org types
+export interface Organization {
+  orgId: string;
+  orgName: string;
+  createdAt: string;
+  memberCount?: number;
+  trackerCount?: number;
+  createdByName?: string;
+  createdByEmail?: string;
+  role?: 'ORG_ADMIN' | 'ORG_MEMBER';
+}
+
+export interface OrgMember {
+  id: number;
+  userId: string;
+  name: string;
+  email: string;
+  phoneNumber: string | null;
+  role: 'ORG_ADMIN' | 'ORG_MEMBER';
+  createdAt: string;
 }
 
 // Tracker types
@@ -35,6 +59,15 @@ export interface Tracker {
   myRole?: UserRole;
   memberCount?: number;
   leadCount?: number;
+  hasAccess?: boolean | number;
+}
+
+export interface AvailableOrgMember {
+  userId: string;
+  name: string;
+  email: string;
+  phoneNumber: string | null;
+  orgRole: 'ORG_ADMIN' | 'ORG_MEMBER';
 }
 
 export interface TrackerMember {
@@ -69,7 +102,7 @@ export interface AccessRequest {
 
 // Lead types
 export type LeadType = 'NEW' | 'YELLOW';
-export type LeadStatus = 'NEW' | 'CONTACTED' | 'QUALIFIED' | 'CONVERTED' | 'LOST';
+export type LeadStatus = string;
 export type SourceChannel = 'LinkedIn' | 'Website' | 'Referral' | 'Cold Call' | 'Event' | 'Other';
 
 export interface Lead {
@@ -132,6 +165,7 @@ export interface CallerInteraction {
 export interface CustomStatus {
   id: number;
   trackerId: string;
+  category: 'CALLER' | 'LEAD';
   statusName: string;
   statusOrder: number;
   statusColor: string;
@@ -148,6 +182,7 @@ export interface LeadFilters {
   leadType?: LeadType;
   status?: LeadStatus;
   assignedTo?: string;
+  ownerId?: string;
   sourceChannel?: SourceChannel;
   sourceBdaId?: string;
   duplicatesOnly?: boolean;
@@ -156,8 +191,9 @@ export interface LeadFilters {
   country?: string;
   city?: string;
   leadWants?: string;
-  ownerId?: string;
   search?: string;
+  sortBy?: 'createdAt' | 'leadName' | 'status' | 'serialNumber';
+  sortOrder?: 'asc' | 'desc';
   page?: number;
   limit?: number;
 }

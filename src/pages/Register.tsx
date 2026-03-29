@@ -123,7 +123,14 @@ export function Register() {
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {error && (
                   <Alert variant="destructive">
-                    <AlertDescription>{error}</AlertDescription>
+                    <AlertDescription>
+                      {error}
+                      {error.includes('invite-only') && (
+                        <span className="block mt-1">
+                          <a href="mailto:hitesh@tresto.io" className="underline font-medium">hitesh@tresto.io</a>
+                        </span>
+                      )}
+                    </AlertDescription>
                   </Alert>
                 )}
 

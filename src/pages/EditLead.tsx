@@ -196,7 +196,7 @@ export function EditLead() {
           <CardContent className="space-y-6">
             <div>
               <Skeleton className="h-4 w-28 mb-3" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Skeleton className="h-4 w-20 mb-1" />
                   <Skeleton className="h-10 w-full" />
@@ -217,7 +217,7 @@ export function EditLead() {
             </div>
             <div>
               <Skeleton className="h-4 w-36 mb-3" />
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-10 w-full" />
               </div>
@@ -267,7 +267,7 @@ export function EditLead() {
             {/* Lead Information */}
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Lead Information</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="mb-1">Lead Name</Label>
                   <Input {...register('leadName')} placeholder="John Doe" />
@@ -385,7 +385,7 @@ export function EditLead() {
             {/* Source & Classification */}
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Source & Classification</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="mb-1">Lead Type *</Label>
                   <select {...register('leadType')} className={selectClassName}>
@@ -434,7 +434,7 @@ export function EditLead() {
             {/* Location */}
             <div>
               <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">Location</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label className="mb-1">Country *</Label>
                   <select {...register('country')} className={selectClassName}>

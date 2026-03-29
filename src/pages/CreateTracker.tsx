@@ -1,21 +1,27 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { ChevronLeft } from 'lucide-react';
-import { trackerApi } from '../api';
+import { trackerApi, orgApi } from '../api';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/ui/card';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Button } from '../components/ui/button';
 import { Alert, AlertDescription } from '../components/ui/alert';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../components/ui/select';
 
 const trackerSchema = z.object({
   trackerName: z.string().min(1, 'Tracker name is required'),
   businessName: z.string().min(1, 'Business name is required'),
-  trackerMode: z.enum(['SINGULAR', 'MULTI']),
 });
 
 type TrackerForm = z.infer<typeof trackerSchema>;
@@ -24,9 +30,16 @@ export function CreateTracker() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [error, setError] = useState('');
+  const [selectedOrgId, setSelectedOrgId] = useState('');
+
+  const { data: orgsData } = useQuery({
+    queryKey: ['my-orgs'],
+    queryFn: () => orgApi.myOrgs(),
+  });
+  const myOrgs = orgsData?.data || [];
 
   const createMutation = useMutation({
-    mutationFn: (data: TrackerForm) => trackerApi.create(data),
+    mutationFn: (data: TrackerForm) => trackerApi.create({ ...data, trackerMode: 'MULTI', orgId: selectedOrgId || undefined }),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ['trackers'] });
       navigate(`/trackers/${response.data.trackerId}`);
@@ -42,9 +55,6 @@ export function CreateTracker() {
     formState: { errors },
   } = useForm<TrackerForm>({
     resolver: zodResolver(trackerSchema),
-    defaultValues: {
-      trackerMode: 'MULTI',
-    },
   });
 
   return (
@@ -95,22 +105,22 @@ export function CreateTracker() {
               )}
             </div>
 
-            <div>
-              <Label htmlFor="trackerMode">
-                Tracker Mode
-              </Label>
-              <select
-                id="trackerMode"
-                {...register('trackerMode')}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
-                <option value="MULTI">Multi (Multiple members can add leads)</option>
-                <option value="SINGULAR">Singular (Only owner can add leads)</option>
-              </select>
-              <p className="text-muted-foreground text-sm mt-1">
-                Singular mode: Only you can add leads. Others can only view.
-              </p>
-            </div>
+            {myOrgs.length > 0 && (
+              <div>
+                <Label>Organization</Label>
+                <Select value={selectedOrgId} onValueChange={setSelectedOrgId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select organization" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {myOrgs.map((org) => (
+                      <SelectItem key={org.orgId} value={org.orgId}>{org.orgName}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">Assign this tracker to an organization</p>
+              </div>
+            )}
 
             <Button
               type="submit"

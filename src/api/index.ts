@@ -18,6 +18,9 @@ import type {
   ActivityItem,
   ApiResponse,
   UserRole,
+  Organization,
+  OrgMember,
+  AvailableOrgMember,
 } from '../types';
 
 const apiUrl = import.meta.env.VITE_API_URL || '/api';
@@ -90,13 +93,18 @@ export const trackerApi = {
     return data;
   },
 
-  create: async (tracker: { trackerName: string; businessName: string; trackerMode: string }) => {
+  create: async (tracker: { trackerName: string; businessName: string; trackerMode: string; orgId?: string }) => {
     const { data } = await api.post<ApiResponse<Tracker>>('/trackers', tracker);
     return data;
   },
 
   update: async (trackerId: string, updates: Partial<Tracker>) => {
     const { data } = await api.put<ApiResponse<void>>(`/trackers/${trackerId}`, updates);
+    return data;
+  },
+
+  delete: async (trackerId: string) => {
+    const { data } = await api.delete<ApiResponse<void>>(`/trackers/${trackerId}`);
     return data;
   },
 
@@ -154,6 +162,11 @@ export const trackerApi = {
 
   cancelInvitation: async (trackerId: string, inviteId: number) => {
     const { data } = await api.delete<ApiResponse<void>>(`/trackers/${trackerId}/invite/${inviteId}`);
+    return data;
+  },
+
+  getOrgMembers: async (trackerId: string) => {
+    const { data } = await api.get<ApiResponse<AvailableOrgMember[]>>(`/trackers/${trackerId}/org-members`);
     return data;
   },
 };
@@ -293,12 +306,12 @@ export const callerInteractionApi = {
 
 // Custom Status API
 export const customStatusApi = {
-  list: async (trackerId: string) => {
-    const { data } = await api.get<ApiResponse<CustomStatus[]>>(`/trackers/${trackerId}/custom-statuses`);
+  list: async (trackerId: string, category: 'CALLER' | 'LEAD' = 'CALLER') => {
+    const { data } = await api.get<ApiResponse<CustomStatus[]>>(`/trackers/${trackerId}/custom-statuses`, { params: { category } });
     return data;
   },
 
-  create: async (trackerId: string, status: { statusName: string; statusColor?: string; statusType?: string }) => {
+  create: async (trackerId: string, status: { statusName: string; statusColor?: string; statusType?: string; category?: string }) => {
     const { data } = await api.post<ApiResponse<CustomStatus>>(`/trackers/${trackerId}/custom-statuses`, status);
     return data;
   },
@@ -315,6 +328,52 @@ export const customStatusApi = {
 
   reorder: async (trackerId: string, statusIds: number[]) => {
     const { data } = await api.put<ApiResponse<void>>(`/trackers/${trackerId}/custom-statuses/reorder`, { statusIds });
+    return data;
+  },
+};
+
+// Admin API (Super Admin only)
+export const adminApi = {
+  listOrgs: async () => {
+    const { data } = await api.get<ApiResponse<Organization[]>>('/admin/orgs');
+    return data;
+  },
+
+  createOrg: async (orgName: string, adminEmail: string) => {
+    const { data } = await api.post<ApiResponse<{ orgId: string; orgName: string }>>('/admin/orgs', { orgName, adminEmail });
+    return data;
+  },
+
+  deleteOrg: async (orgId: string) => {
+    const { data } = await api.delete<ApiResponse<void>>(`/admin/orgs/${orgId}`);
+    return data;
+  },
+};
+
+// Org API
+export const orgApi = {
+  myOrgs: async () => {
+    const { data } = await api.get<ApiResponse<Organization[]>>('/orgs/mine');
+    return data;
+  },
+
+  listMembers: async (orgId: string) => {
+    const { data } = await api.get<ApiResponse<{ org: Organization; members: OrgMember[] }>>(`/orgs/${orgId}/members`);
+    return data;
+  },
+
+  addMember: async (orgId: string, email: string, role: 'ORG_ADMIN' | 'ORG_MEMBER') => {
+    const { data } = await api.post<ApiResponse<void>>(`/orgs/${orgId}/members`, { email, role });
+    return data;
+  },
+
+  updateMember: async (orgId: string, userId: string, role: 'ORG_ADMIN' | 'ORG_MEMBER') => {
+    const { data } = await api.put<ApiResponse<void>>(`/orgs/${orgId}/members/${userId}`, { role });
+    return data;
+  },
+
+  removeMember: async (orgId: string, userId: string) => {
+    const { data } = await api.delete<ApiResponse<void>>(`/orgs/${orgId}/members/${userId}`);
     return data;
   },
 };

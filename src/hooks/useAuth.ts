@@ -11,8 +11,8 @@ export function useLogin() {
     mutationFn: ({ email, password }: { email: string; password: string }) =>
       authApi.login(email, password),
     onSuccess: (response) => {
-      const { userId, name, email, phoneNumber, token } = response.data;
-      setAuth({ userId, name: name || '', email, phoneNumber, createdAt: '' }, token);
+      const { userId, name, email, phoneNumber, isSuperAdmin, token } = response.data;
+      setAuth({ userId, name: name || '', email, phoneNumber, createdAt: '', isSuperAdmin }, token);
       navigate('/');
     },
   });
