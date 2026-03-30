@@ -85,6 +85,7 @@ function App() {
             <Route path="/trackers/:id/leads/new" element={<AddLead />} />
             <Route path="/trackers/:id/leads/:leadId/edit" element={<EditLead />} />
             <Route path="/analytics" element={<Analytics />} />
+            <Route path="/orgs/:orgId/members" element={<OrgMembers />} />
           </Route>
 
           {/* Admin routes — standalone, outside main Layout */}

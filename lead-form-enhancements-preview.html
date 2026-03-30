@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lead Form Enhancements - Preview</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 40px 20px;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 32px;
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .header p {
+      font-size: 16px;
+      opacity: 0.95;
+    }
+    .content {
+      padding: 40px;
+    }
+    .feature {
+      margin-bottom: 48px;
+    }
+    .feature:last-child {
+      margin-bottom: 0;
+    }
+    .feature-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1f2937;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge {
+      display: inline-block;
+      background: #10b981;
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .demo-box {
+      background: #f9fafb;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 24px;
+      margin-top: 16px;
+    }
+
+    /* Phone Input Demo */
+    .phone-input-demo {
+      max-width: 400px;
+    }
+    .phone-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .phone-wrapper {
+      display: flex;
+      gap: 8px;
+    }
+    .cc-button {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 12px;
+      height: 42px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: white;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 14px;
+      color: #1f2937;
+      position: relative;
+    }
+    .cc-button:hover {
+      background: #f3f4f6;
+      border-color: #9ca3af;
+    }
+    .flag {
+      font-size: 20px;
+      line-height: 1;
+    }
+    .code {
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .chevron {
+      width: 12px;
+      height: 12px;
+      color: #6b7280;
+      margin-left: 2px;
+    }
+    .phone-input {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    .phone-input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    /* Dropdown Demo */
+    .dropdown-preview {
+      margin-top: 12px;
+      width: 280px;
+      background: white;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+      max-height: 240px;
+      overflow-y: auto;
+    }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover {
+      background: #f3f4f6;
+    }
+    .dropdown-item.selected {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+    .dropdown-item .flag {
+      font-size: 18px;
+    }
+    .dropdown-item .country {
+      flex: 1;
+      color: #1f2937;
+    }
+    .dropdown-item .cc {
+      font-size: 12px;
+      color: #6b7280;
+      font-family: 'Courier New', monospace;
+    }
+
+    /* Attachment Demo */
+    .attachment-demo {
+      max-width: 500px;
+    }
+    .attachment-zone {
+      border: 2px dashed #d1d5db;
+      border-radius: 12px;
+      padding: 32px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: white;
+    }
+    .attachment-zone:hover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.03);
+    }
+    .attachment-icon {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 12px;
+      fill: #9ca3af;
+    }
+    .attachment-text {
+      font-size: 14px;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+    .attachment-text .browse {
+      color: #667eea;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+    .attachment-hint {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    /* File List */
+    .file-list {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .file-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #f3f4f6;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .file-item .icon {
+      width: 16px;
+      height: 16px;
+      fill: #6b7280;
+      flex-shrink: 0;
+    }
+    .file-item .name {
+      flex: 1;
+      color: #1f2937;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .file-item .size {
+      font-size: 12px;
+      color: #6b7280;
+      flex-shrink: 0;
+    }
+    .file-item .remove {
+      width: 16px;
+      height: 16px;
+      fill: #6b7280;
+      cursor: pointer;
+      transition: fill 0.15s;
+      flex-shrink: 0;
+    }
+    .file-item .remove:hover {
+      fill: #dc2626;
+    }
+
+    .features-list {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 20px;
+      border-radius: 8px;
+      margin-top: 24px;
+    }
+    .features-list h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1e40af;
+      margin-bottom: 12px;
+    }
+    .features-list ul {
+      list-style: none;
+      padding: 0;
+    }
+    .features-list li {
+      padding: 6px 0;
+      color: #1e40af;
+      font-size: 14px;
+    }
+    .features-list li:before {
+      content: "✓";
+      display: inline-block;
+      width: 20px;
+      font-weight: bold;
+      color: #10b981;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Lead Form Enhancements</h1>
+      <p>New features added to AddLead & EditLead forms</p>
+    </div>
+
+    <div class="content">
+      <!-- Feature 1: Country Code Picker -->
+      <div class="feature">
+        <div class="feature-title">
+          <span>📞 Flag Emoji Country Code Picker</span>
+          <span class="badge">New</span>
+        </div>
+
+        <div class="demo-box">
+          <div class="phone-input-demo">
+            <label class="phone-label">Phone Number</label>
+            <div class="phone-wrapper">
+              <button class="cc-button">
+                <span class="flag">🇮🇳</span>
+                <span class="code">+91</span>
+                <svg class="chevron" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </button>
+              <input type="text" class="phone-input" placeholder="234 567 8900">
+            </div>
+
+            <div class="dropdown-preview">
+              <div class="dropdown-item selected">
+                <span class="flag">🇮🇳</span>
+                <span class="country">India</span>
+                <span class="cc">+91</span>
+              </div>
+              <div class="dropdown-item">
+                <span class="flag">🇺🇸</span>
+                <span class="country">United States</span>
+                <span class="cc">+1</span>
+              </div>
+              <div class="dropdown-item">
+                <span class="flag">🇬🇧</span>
+                <span class="country">United Kingdom</span>
+                <span class="cc">+44</span>
+              </div>
+              <div class="dropdown-item">
+                <span class="flag">🇦🇪</span>
+                <span class="country">UAE</span>
+                <span class="cc">+971</span>
+              </div>
+              <div class="dropdown-item">
+                <span class="flag">🇸🇬</span>
+                <span class="country">Singapore</span>
+                <span class="cc">+65</span>
+              </div>
+              <div class="dropdown-item">
+                <span class="flag">🇯🇵</span>
+                <span class="country">Japan</span>
+                <span class="cc">+81</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: File Attachments -->
+      <div class="feature">
+        <div class="feature-title">
+          <span>📎 Drag & Drop File Attachments</span>
+          <span class="badge">New</span>
+        </div>
+
+        <div class="demo-box">
+          <div class="attachment-demo">
+            <label class="phone-label">Attachments</label>
+            <div class="attachment-zone">
+              <svg class="attachment-icon" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path>
+              </svg>
+              <div class="attachment-text">
+                Drop files here or <span class="browse">browse</span>
+              </div>
+              <div class="attachment-hint">PDF, Images, Docs — max 10 MB each</div>
+            </div>
+
+            <div class="file-list">
+              <div class="file-item">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="name">proposal_draft_v2.pdf</span>
+                <span class="size">2.3 MB</span>
+                <svg class="remove" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+              <div class="file-item">
+                <svg class="icon" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8 4a3 3 0 00-3 3v4a5 5 0 0010 0V7a1 1 0 112 0v4a7 7 0 11-14 0V7a5 5 0 0110 0v4a3 3 0 11-6 0V7a1 1 0 012 0v4a1 1 0 102 0V7a3 3 0 00-3-3z" clip-rule="evenodd"></path>
+                </svg>
+                <span class="name">requirements_summary.docx</span>
+                <span class="size">856 KB</span>
+                <svg class="remove" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="features-list">
+        <h3>✨ Implementation Highlights</h3>
+        <ul>
+          <li>20 country codes with flag emojis (🇮🇳 🇺🇸 🇬🇧 🇦🇪 etc.)</li>
+          <li>Click-outside-to-close dropdown functionality</li>
+          <li>Parses existing phone numbers in EditLead form</li>
+          <li>Drag-and-drop file upload with visual feedback</li>
+          <li>File type validation (PDF, Images, Docs)</li>
+          <li>Individual file removal with X button</li>
+          <li>File size display (KB/MB formatting)</li>
+          <li>Frontend-only state (no database changes)</li>
+          <li>Consistent UI across AddLead & EditLead pages</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

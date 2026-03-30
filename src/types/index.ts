@@ -1,4 +1,10 @@
 // User types
+export interface UserOrg {
+  orgId: string;
+  orgName: string;
+  orgRole: 'ORG_ADMIN' | 'ORG_MEMBER';
+}
+
 export interface User {
   userId: string;
   name: string;
@@ -6,6 +12,7 @@ export interface User {
   phoneNumber: string | null;
   createdAt: string;
   isSuperAdmin?: boolean;
+  orgs?: UserOrg[];
 }
 
 export interface AuthResponse {

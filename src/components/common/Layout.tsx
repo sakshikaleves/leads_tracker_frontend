@@ -1,5 +1,5 @@
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FolderKanban, BarChart3, LogOut, ChevronLeft, ChevronRight, User, Shield } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, BarChart3, LogOut, ChevronLeft, ChevronRight, User, Shield, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 import { useLogout } from '../../hooks/useAuth';
@@ -29,9 +29,12 @@ const baseNavItems = [
 export function Layout() {
   const [collapsed, setCollapsed] = useState(false);
   const user = useAuthStore((state) => state.user);
-  const navItems = user?.isSuperAdmin
-    ? [...baseNavItems, { to: '/admin', icon: Shield, label: 'Admin' }]
-    : baseNavItems;
+  const adminOrg = user?.orgs?.find(o => o.orgRole === 'ORG_ADMIN');
+  const navItems = [
+    ...baseNavItems,
+    ...(adminOrg ? [{ to: `/orgs/${adminOrg.orgId}/members`, icon: Users, label: 'My Team' }] : []),
+    ...(user?.isSuperAdmin ? [{ to: '/admin', icon: Shield, label: 'Admin' }] : []),
+  ];
   const logout = useLogout();
   const location = useLocation();
 
