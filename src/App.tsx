@@ -15,6 +15,8 @@ import { TeamDashboard } from './pages/TeamDashboard';
 import { TrackerSettings } from './pages/TrackerSettings';
 import { AdminPanel } from './pages/AdminPanel';
 import { OrgMembers } from './pages/OrgMembers';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -64,6 +66,22 @@ function App() {
             element={
               <PublicRoute>
                 <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/forgot-password"
+            element={
+              <PublicRoute>
+                <ForgotPassword />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/reset-password"
+            element={
+              <PublicRoute>
+                <ResetPassword />
               </PublicRoute>
             }
           />

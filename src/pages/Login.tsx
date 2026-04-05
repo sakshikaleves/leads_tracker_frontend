@@ -158,6 +158,12 @@ export function Login() {
                   )}
                 </div>
 
+                <div className="text-right">
+                  <Link to="/forgot-password" className="text-xs text-muted-foreground hover:text-primary hover:underline">
+                    Forgot password?
+                  </Link>
+                </div>
+
                 <Button type="submit" className="w-full" disabled={login.isPending}>
                   {login.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                   {login.isPending ? 'Signing in...' : 'Sign in'}

@@ -109,10 +109,15 @@ export function EditLead() {
       const leadContact = data.phoneNumber
         ? `${selectedCC.code} ${data.phoneNumber}`
         : undefined;
-      const { phoneNumber, ...rest } = data;
+      const { phoneNumber, socialLink, ...rest } = data;
+      const allLinks = [...links];
+      if (socialLink) allLinks.unshift(socialLink);
+      const linksText = allLinks.length > 0 ? allLinks.join('\n') : '';
+      const details = [data.additionalDetails, linksText].filter(Boolean).join('\n---\n');
       return leadApi.update(id!, leadId!, {
         ...rest,
         leadContact,
+        additionalDetails: details || undefined,
         sourceChannel: data.sourceChannel || undefined,
         sourceBdaId: data.sourceBdaId || undefined,
       } as any);

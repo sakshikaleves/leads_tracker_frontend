@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { ArrowLeft, Plus, Trash2, Shield, User, Users } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Shield, User, Users, Mail, Clock } from 'lucide-react';
 import { orgApi } from '../api';
 import { useAuthStore } from '../store/authStore';
 import { Button } from '../components/ui/button';
@@ -85,6 +85,7 @@ export function OrgMembers() {
 
   const org = data?.data?.org;
   const members = data?.data?.members || [];
+  const invitations = (data?.data as any)?.invitations || [];
 
   const content = (
     <>
@@ -160,6 +161,50 @@ export function OrgMembers() {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Pending Invitations */}
+        {invitations.length > 0 && (
+          <div className="space-y-3">
+            <h2 className={`text-sm font-semibold ${isAdminRoute ? 'text-slate-300' : 'text-foreground'}`}>
+              <Mail className="w-4 h-4 inline mr-1.5 -mt-0.5" />
+              Invitations ({invitations.length})
+            </h2>
+            <div className={`rounded-xl divide-y ${isAdminRoute ? 'bg-slate-800/40 border border-slate-700 divide-slate-700' : 'bg-card border border-border divide-border'}`}>
+              {invitations.map((inv: any) => (
+                <div key={inv.id} className="flex items-center justify-between px-5 py-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${isAdminRoute ? 'bg-slate-700/50' : 'bg-muted/50'}`}>
+                      <Mail className={`w-4 h-4 ${isAdminRoute ? 'text-slate-500' : 'text-muted-foreground'}`} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className={`text-sm font-medium truncate ${isAdminRoute ? 'text-slate-300' : 'text-foreground'}`}>{inv.email}</p>
+                      <p className={`text-xs truncate flex items-center gap-1 ${isAdminRoute ? 'text-slate-500' : 'text-muted-foreground'}`}>
+                        <Clock className="w-3 h-3" />
+                        Invited {new Date(inv.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0 ml-3">
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
+                      inv.role === 'ORG_ADMIN'
+                        ? 'bg-amber-500/20 text-amber-400'
+                        : isAdminRoute ? 'bg-slate-600/50 text-slate-400' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {inv.role === 'ORG_ADMIN' ? 'Admin' : 'Member'}
+                    </span>
+                    <span className={`text-[10px] font-semibold px-2 py-1 rounded-full ${
+                      inv.status === 'ACCEPTED'
+                        ? 'bg-green-500/20 text-green-400'
+                        : 'bg-yellow-500/20 text-yellow-400'
+                    }`}>
+                      {inv.status === 'ACCEPTED' ? 'Registered' : 'Pending'}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
